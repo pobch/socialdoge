@@ -4,27 +4,43 @@ import * as admin from 'firebase-admin'
 type Scream = {
   userHandle: string
   body: string
+  createdAt: Date
 }
 
 admin.initializeApp()
-
-export const hello = functions.https.onRequest((request, response) => {
-  response.send('Hello from PoB!')
-})
 
 export const getScreams = functions.https.onRequest((req, res) => {
   admin
     .firestore()
     .collection('screams')
     .get()
-    .then(docs => {
-      let result: Scream[] = []
+    .then(snapshot => {
+      let screams: Scream[] = []
 
-      docs.forEach(doc => {
-        result.push(doc.data() as Scream)
+      snapshot.forEach(doc => {
+        screams.push(doc.data() as Scream)
       })
 
-      res.json(result)
+      res.json(screams)
     })
     .catch(err => console.error(err))
+})
+
+export const createScream = functions.https.onRequest((req, res) => {
+  const newScream = {
+    ...req.body,
+    createdAt: admin.firestore.Timestamp.fromDate(new Date())
+  }
+
+  admin
+    .firestore()
+    .collection('screams')
+    .add(newScream)
+    .then(doc => {
+      res.json({ message: `${doc.id} was created` })
+    })
+    .catch(err => {
+      res.status(500).json({ message: 'something went wrong', isError: true })
+      console.error(err)
+    })
 })
