@@ -2,7 +2,7 @@ import * as functions from 'firebase-functions'
 import * as admin from 'firebase-admin'
 import * as express from 'express'
 import * as firebase from 'firebase'
-import { Scream } from './dbSchema'
+import { Scream, User } from './dbSchema'
 
 const firebaseConfig = {
   apiKey: 'AIzaSyDIAzTMnI0RlTJZCgxnZah82eKqswo99x0',
@@ -69,17 +69,44 @@ app.post('/signup', (req, res) => {
 
   // TODO: validate
 
-  firebase
-    .auth()
-    .createUserWithEmailAndPassword(reqBody.email, reqBody.password)
-    .then(data => {
-      res.status(201).json({ message: `an user ${data.user?.uid} was created` })
+  db.doc(`/users/${reqBody.handle}`)
+    .get()
+    .then(snapShot => {
+      if (snapShot.exists) {
+        throw new Error('400/handle-already-taken')
+      } else {
+        return firebase.auth().createUserWithEmailAndPassword(reqBody.email, reqBody.password)
+      }
+    })
+    .then(auth => {
+      const userId = auth.user?.uid ?? null
+      const newUserDoc: User = {
+        handle: reqBody.handle,
+        email: reqBody.email,
+        createdAt: new Date().toISOString(),
+        userId
+      }
+      return Promise.all([
+        db.doc(`/users/${reqBody.handle}`).set(newUserDoc),
+        auth.user?.getIdToken() ?? null
+      ])
+    })
+    .then(([_, token]) => {
+      res.status(201).json({ token })
+      return
     })
     .catch(e => {
       console.error(e)
+      // custom error
+      if (e?.message === '400/handle-already-taken') {
+        res.status(400).json({ handle: 'this handle is already taken' })
+        return
+      }
+
       res
         .status(500)
         .json({ error: 'something went wrong', fbErrorCode: e.code, fbErrorMsg: e.message })
+      return
     })
 })
 
