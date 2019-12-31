@@ -1,48 +1,16 @@
 import * as functions from 'firebase-functions'
-import * as admin from 'firebase-admin'
 import * as express from 'express'
 import * as firebase from 'firebase'
-import { Scream, User } from './dbSchema'
+import { Scream, User } from './types/dbSchema'
 
-const firebaseConfig = {
-  apiKey: 'AIzaSyDIAzTMnI0RlTJZCgxnZah82eKqswo99x0',
-  authDomain: 'socialdoge-626e7.firebaseapp.com',
-  databaseURL: 'https://socialdoge-626e7.firebaseio.com',
-  projectId: 'socialdoge-626e7',
-  storageBucket: 'socialdoge-626e7.appspot.com',
-  messagingSenderId: '619471434921',
-  appId: '1:619471434921:web:7e0465118bee3ea51865b8',
-  measurementId: 'G-796RPC8QJS'
-}
-firebase.initializeApp(firebaseConfig)
+import './initializers/firebaseInit'
+import './initializers/adminInit'
+import { db } from './initializers/db'
+import { getScreamsHandler } from './handlers/scream'
 
-admin.initializeApp()
-
-const db = admin.firestore()
 const app = express()
 
-type ResponseScream = Scream & { screamId: string }
-
-app.get('/screams', (req, res) => {
-  db.collection('screams')
-    .get()
-    .then(snapshot => {
-      let screams: ResponseScream[] = []
-
-      snapshot.forEach(doc => {
-        screams.push({
-          screamId: doc.id,
-          ...(doc.data() as Scream)
-        })
-      })
-
-      res.json(screams)
-    })
-    .catch(err => {
-      res.status(500).json({ error: 'something went wrong' })
-      console.error(err)
-    })
-})
+app.get('/screams', getScreamsHandler)
 
 app.post('/scream', (req, res) => {
   const reqBody: { userHandle: string; body: string } = req.body
