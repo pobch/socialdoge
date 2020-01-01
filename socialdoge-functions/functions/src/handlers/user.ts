@@ -2,16 +2,25 @@ import * as firebase from 'firebase'
 import { firebaseConfig } from '../configs/firebaseCfg'
 import { db } from '../utils/adminUtil'
 import { RequestHandler } from 'express'
+import { signUpValidator } from '../utils/validators'
 import { User } from '../types/dbSchema'
+import { SignUpReq } from '../types/request'
 
 firebase.initializeApp(firebaseConfig)
 
 const signUpHandler: RequestHandler = (req, res) => {
-  const reqBody: { email: string; password: string; confirmPassword: string; handle: string } = {
+  const reqBody: SignUpReq = {
     ...req.body
   }
 
-  // TODO: validate
+  // Validate request data
+  const { errors, isValid } = signUpValidator(reqBody)
+  if (!isValid) {
+    res.status(400).json({
+      ...errors
+    })
+    return
+  }
 
   db.doc(`/users/${reqBody.handle}`)
     .get()
