@@ -1,8 +1,8 @@
 import { RequestHandler } from 'express'
-import { SignUpReq } from '../types/request'
+import { SignUpRequest } from '../types/request'
 
 export const signUpRequiredProps: RequestHandler = (req, res, next) => {
-  const { email, password, confirmPassword, handle } = req.body as SignUpReq
+  const { email, password, confirmPassword, handle } = req.body as SignUpRequest
 
   if (!email || !password || !confirmPassword || !handle) {
     res.status(400).json({ error: 'All required properties are not provided' })

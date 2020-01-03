@@ -1,4 +1,4 @@
-export type SignUpReq = {
+export type SignUpRequest = {
   email?: any
   password?: any
   confirmPassword?: any
@@ -11,4 +11,9 @@ export type SignUpRequiredData = {
   password: string
   confirmPassword: string
   handle: string
+}
+
+export type LogInRequired = {
+  email: string
+  password: string
 }

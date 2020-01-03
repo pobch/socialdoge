@@ -4,21 +4,17 @@ import { db } from '../utils/adminUtil'
 import { RequestHandler } from 'express'
 import { signUpValidator } from '../utils/validators'
 import { User } from '../types/dbSchema'
-import { SignUpRequiredData } from '../types/request'
+import { SignUpRequiredData, LogInRequired } from '../types/request'
 
 firebase.initializeApp(firebaseConfig)
 
 const signUpHandler: RequestHandler = (req, res) => {
-  const reqBody: SignUpRequiredData = {
-    ...req.body
-  }
+  const reqBody: SignUpRequiredData = { ...req.body }
 
   // Validate request data
   const { errors, isValid } = signUpValidator(reqBody)
   if (!isValid) {
-    res.status(400).json({
-      ...errors
-    })
+    res.status(400).json({ ...errors })
     return
   }
 
@@ -26,7 +22,7 @@ const signUpHandler: RequestHandler = (req, res) => {
     .get()
     .then(snapShot => {
       if (snapShot.exists) {
-        throw new Error('400/handle-already-taken')
+        throw new Error('handle-already-taken')
       } else {
         return firebase.auth().createUserWithEmailAndPassword(reqBody.email, reqBody.password)
       }
@@ -51,7 +47,7 @@ const signUpHandler: RequestHandler = (req, res) => {
     .catch(e => {
       console.error(e)
       // custom error
-      if (e?.message === '400/handle-already-taken') {
+      if (e?.message === 'handle-already-taken') {
         res.status(400).json({ handle: 'this handle is already taken' })
         return
       }
@@ -63,4 +59,24 @@ const signUpHandler: RequestHandler = (req, res) => {
     })
 }
 
-export { signUpHandler }
+const logInHandler: RequestHandler = (req, res) => {
+  const reqBody: LogInRequired = { ...req.body }
+
+  firebase
+    .auth()
+    .signInWithEmailAndPassword(reqBody.email, reqBody.password)
+    .then(auth => {
+      return auth.user?.getIdToken()
+    })
+    .then(token => {
+      res.json({ token })
+      return
+    })
+    .catch(e => {
+      console.error(e)
+      res.status(403).json({ general: 'Wrong credentials, please try again' })
+      return
+    })
+}
+
+export { signUpHandler, logInHandler }
