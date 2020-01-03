@@ -1,4 +1,4 @@
-import { SignUpReq } from '../types/request'
+import { SignUpRequiredData } from '../types/request'
 
 type ValidationError = {
   email?: string
@@ -17,7 +17,7 @@ function isEmpty(text: string) {
   return trimmedText.length > 0 ? false : true
 }
 
-function signUpValidator({ email, confirmPassword, password, handle }: SignUpReq) {
+export function signUpValidator({ email, confirmPassword, password, handle }: SignUpRequiredData) {
   let errors: ValidationError = {}
 
   // Validate email
@@ -45,5 +45,3 @@ function signUpValidator({ email, confirmPassword, password, handle }: SignUpReq
     isValid: Object.keys(errors).length === 0
   }
 }
-
-export { signUpValidator }

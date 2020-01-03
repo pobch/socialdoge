@@ -4,12 +4,12 @@ import { db } from '../utils/adminUtil'
 import { RequestHandler } from 'express'
 import { signUpValidator } from '../utils/validators'
 import { User } from '../types/dbSchema'
-import { SignUpReq } from '../types/request'
+import { SignUpRequiredData } from '../types/request'
 
 firebase.initializeApp(firebaseConfig)
 
 const signUpHandler: RequestHandler = (req, res) => {
-  const reqBody: SignUpReq = {
+  const reqBody: SignUpRequiredData = {
     ...req.body
   }
 
