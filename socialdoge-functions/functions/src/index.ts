@@ -15,3 +15,5 @@ export const api = functions.region('asia-east2').https.onRequest(app)
 
 // @TODO add json validator to validate `req.body` at runtime
 // use `express-validator`??
+// @TODO transaction between `firebase.auth()` service and `admin.firestore()` service
+// use firebase function to help this??
