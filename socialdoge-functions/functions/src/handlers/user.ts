@@ -14,6 +14,7 @@ const signUpHandler: RequestHandler = (req, res) => {
   // Validate request data
   const { errors, isValid } = signUpValidator(reqBody)
   if (!isValid) {
+    console.error(new Error(JSON.stringify(errors)))
     res.status(400).json({ ...errors })
     return
   }
