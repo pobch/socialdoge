@@ -1,13 +1,16 @@
+import 'source-map-support/register'
+
 import * as functions from 'firebase-functions'
 import * as express from 'express'
 import { getScreamsHandler, createScreamHandler } from './handlers/scream'
 import { signUpHandler, logInHandler } from './handlers/user'
 import { signUpRequiredProps } from './middlewares/user'
+import { isAuth } from './middlewares/isAuth'
 
 const app = express()
 
 app.get('/screams', getScreamsHandler)
-app.post('/scream', createScreamHandler)
+app.post('/scream', isAuth, createScreamHandler)
 app.post('/signup', signUpRequiredProps, signUpHandler)
 app.post('/login', logInHandler)
 
